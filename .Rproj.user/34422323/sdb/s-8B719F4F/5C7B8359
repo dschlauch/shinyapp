@@ -1,0 +1,16 @@
+{
+    "contents" : "\nlibrary(shiny)\nlibrary(XML)\n# teampage <- htmlTreeParse(\"http://socialbostonsports.com/leagues/45120/teams/208585\",useInternalNodes=T)\n# teampage.parse <- xpathApply(teampage, \"//a/@class\")\n\n\nshinyUI(fluidPage(\n    tags$head(includeScript(\"googleanalytics.js\")),\n  # Application title\n  titlePanel(strong(\"Dodgeball or whatever\")),\n    fluidRow(column(4,\n       radioButtons(\"radio\", label = h3(\"Display\"),\n            choices = list(\n                \"Current Season\" = 1,\"Season Archive\" = 4, \"Player\" = 2, \"Players Overall\" = 3, \n                \"Network\"=5), selected = 5))),\n    uiOutput(\"searchtype\"),\n  \n    fluidRow(\n        column(5,\n            uiOutput(\"chart1\")\n        ),\n        column(6,\n            uiOutput(\"chart2\")\n        )      \n    ),\n  fluidRow(\n      column(10,\n             uiOutput(\"NetChart\")))\n  )\n)\n",
+    "created" : 1428544663383.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3894846151",
+    "id" : "5C7B8359",
+    "lastKnownWriteTime" : 1429296201,
+    "path" : "~/shinyApp/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

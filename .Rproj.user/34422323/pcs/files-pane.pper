@@ -1,0 +1,9 @@
+{
+    "path" : "~/shinyApp",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}
