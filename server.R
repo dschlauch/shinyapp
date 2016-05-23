@@ -2,6 +2,10 @@ library(shiny)
 library(sjPlot)
 library(ggplot2)
 library(reshape2)
+library(igraph)
+
+data(MisLinks)
+data(MisNodes)
 
 shinyServer(function(input, output) {
     validLeagueDF <- readRDS("./data/validLeagueDF.rdata")
@@ -12,7 +16,7 @@ shinyServer(function(input, output) {
     
     getFullLinks <- function(){
         html.raw<-htmlTreeParse(
-            "http://socialbostonsports.com/leagues/dodgeball?state=LIVE",
+            "http://www.socialbostonsports.com/leagues/dodgeball?state=LIVE",
             useInternalNodes=T
         )      
         html.parse<-xpathApply(html.raw, "//a/@href")
@@ -21,7 +25,7 @@ shinyServer(function(input, output) {
         linknames <- as.character(unlist(html.parse2))
         links <- links[grep("standings",links)]
         linknames <- linknames[grep("Dodgeball",linknames)]
-        fulllinks <- paste("http://socialbostonsports.com",links,sep="")
+        fulllinks <- paste("http://www.socialbostonsports.com",links,sep="")
         names(fulllinks) <- linknames
         fulllinks    
     }
@@ -71,11 +75,41 @@ shinyServer(function(input, output) {
             return(plotOutput("network"))
         }
     })
+    output$force <- renderForceNetwork({
+        minSeasonsPlayed <- input$minSeasons
+        addPlayer <- input$individualNet
+        playerTeam <- data.frame(cbind(masterData$Player,masterData$TeamID,as.numeric(1.0)))
+        playersPass <- table(masterData$Player)
+        playersPass <- c(names(playersPass[playersPass >= minSeasonsPlayed]), addPlayer)
+        playerTeam <- playerTeam[masterData$Player%in%playersPass,]
+        playerTeam[,3] <- as.numeric(playerTeam[,3])
+        playerTeamSpread <- dcast(playerTeam, X1 ~ X2, value.var='X3',fill=0)
+        rownames(playerTeamSpread) <- playerTeamSpread[,1]
+        playerTeamSpread <- as.matrix(playerTeamSpread[,-1])
+        adjMatrix <- playerTeamSpread %*% t(playerTeamSpread)
+        diag(adjMatrix) <- 0
+        
+        require(igraph)
+        filterEdges <- rownames(adjMatrix)!=addPlayer
+        adjMatrix[filterEdges,filterEdges][adjMatrix[filterEdges,filterEdges]<3]<-0
+        pairs <- melt(adjMatrix)
+        playernames <- levels(factor(pairs[,1]))
+        pairs[,1] <- as.numeric(factor(pairs[,1]))-1
+        pairs[,2] <- as.numeric(factor(pairs[,2]))-1
+        pairs <- pairs[pairs[,3]>0,]
+        colnames(pairs) <- c("source","target","value")
+        nodes <- data.frame('name'=playernames,"group"=1)
+        
+        forceNetwork(Links = pairs, Nodes = nodes, Source = "source",
+                     Target = "target", Value = "value", NodeID = "name",
+                     Group = "group", opacity = .8)
+    })
+    
   output$hist <- renderPlot({
       standingsHistogram(input$teamselect)
   })
   output$archivehist <- renderPlot({
-      standingsHistogram(paste("http://socialbostonsports.com/leagues/",input$seasonArchive,"/standings",sep=""))
+      standingsHistogram(paste("http://www.socialbostonsports.com/leagues/",input$seasonArchive,"/standings",sep=""))
   })
   output$network <- renderPlot({
       minSeasonsPlayed <- input$minSeasons
@@ -103,10 +137,7 @@ shinyServer(function(input, output) {
   },height=800)
   
   standingsHistogram <- function(link){
-      html.raw<-htmlTreeParse(
-          link,
-          useInternalNodes=T
-      )
+      html.raw<-htmlTreeParse(link, useInternalNodes=T)
       print(link)
       html.parse<-xpathApply(html.raw, "//td", xmlValue)
       unlistedRes <- unlist(html.parse)
@@ -135,10 +166,7 @@ shinyServer(function(input, output) {
   })
   
   standingsTable <- function(link){
-      html.raw<-htmlTreeParse(
-          link,
-          useInternalNodes=T
-      )
+      html.raw<-htmlTreeParse(link, useInternalNodes=T)
       html.parse<-xpathApply(html.raw, "//td", xmlValue)
       table <- matrix(unlist(html.parse),nrow=6)
       table.df <- data.frame(t(matrix(as.numeric(table[-1,]),nrow=nrow(table[-1,]))))
@@ -163,13 +191,10 @@ shinyServer(function(input, output) {
       html.table$output.complete
   }
   output$archivetable <- renderText({
-      standingsTable(paste("http://socialbostonsports.com/leagues/",input$seasonArchive,"/standings",sep=""))
+      standingsTable(paste("http://www.socialbostonsports.com/leagues/",input$seasonArchive,"/standings",sep=""))
   })
   output$table <- renderText({
-      html.raw<-htmlTreeParse(
-          input$teamselect,
-          useInternalNodes=T
-      )
+      html.raw<-htmlTreeParse(input$teamselect, useInternalNodes=T)
       html.parse<-xpathApply(html.raw, "//td", xmlValue)
       table <- matrix(unlist(html.parse),nrow=6)
       table.df <- data.frame(t(matrix(as.numeric(table[-1,]),nrow=nrow(table[-1,]))))

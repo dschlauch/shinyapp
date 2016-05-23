@@ -9,7 +9,7 @@ leagueIDs <- 1:50000
 
 htmlRes <- sapply(leagueIDs,function(leagueID){
     cat('.')
-    getURL(paste("http://socialbostonsports.com/leagues/",leagueID,"/standings",sep=""))
+    getURL(paste("http://www.socialbostonsports.com/leagues/",leagueID,"/standings",sep=""))
 })
 
 
@@ -39,7 +39,7 @@ saveRDS(validLeagueDF,"validLeagueDF.rdata")
 # Go to each league standings page
 htmlLeaguePages <- sapply(validLeagueDF$validLeagueIDs, function(leagueID){
     cat('.')
-    webpage <- getURL(paste("http://socialbostonsports.com/leagues/",leagueID,"/standings",sep=""))
+    webpage <- getURL(paste("http://www.socialbostonsports.com/leagues/",leagueID,"/standings",sep=""))
     htmlTreeParse(webpage, useInternalNodes=T)
 })
 
@@ -84,7 +84,7 @@ for(leagueIndex in 1:numLeagues){
         
         
         for(x in 1:length(teamLinks)){
-            webpage <- getURL(paste("http://socialbostonsports.com", teamLinks[x], sep=""))
+            webpage <- getURL(paste("http://www.socialbostonsports.com", teamLinks[x], sep=""))
             htmlRawTeampage <- htmlTreeParse(webpage, useInternalNodes=T)
             teamID <- strsplit(as.character(teamLinks[x]),"/")[[1]][5]
             # Get a list of each player on those teams
