@@ -220,7 +220,7 @@ shinyServer(function(input, output) {
     output$teams <- renderText({
         print(input$individualselect)
         teams.df <- masterData[masterData$Player==input$individualselect, c(2,3,5,6)]
-        html.table <- sjt.df(teams.df, altr.row.col=TRUE, string.var = "Seasons", describe=FALSE, no.output=T,showRowNames = FALSE, hideProgressBar=T)
+        html.table <- sjt.df(teams.df, altr.row.col=TRUE, string.var = "Seasons", describe=FALSE, no.output=T,show.rownames = FALSE, hideProgressBar=T)
         paste(h3("Overall record:",sum(teams.df$TeamWins),"-",sum(teams.df$TeamLosses)), html.table$output.complete, sep="")
     })
     output$overall <- renderText({
@@ -236,7 +236,7 @@ shinyServer(function(input, output) {
         colnames(playerOveralldf) <- c("Wins","Losses","+/-","Seasons")
         playerOveralldf$Wins <- as.numeric(as.character(playerOveralldf$Wins))
         playerOveralldf$Losses <- as.numeric(as.character(playerOveralldf$Losses))
-        html.table <- sjt.df(playerOveralldf, altr.row.col=TRUE, string.var = "Player", describe=FALSE, no.output=T,show.rownames = TRUE, hideProgressBar=F)
+        html.table <- sjt.df(playerOveralldf, altr.row.col=TRUE, string.var = "Player", describe=FALSE, no.output=T,show.rownames = F, hideProgressBar=F)
         html.table$output.complete
   })
 })
