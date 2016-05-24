@@ -227,16 +227,16 @@ shinyServer(function(input, output) {
         playerSeasons <- rev(sort(table(masterData$Player)))
         playerSeasons <- playerSeasons[playerSeasons>3]
         playerOveralldf <- cbind(data.frame(t(sapply(names(playerSeasons),function(player){
-            playerSeasons <- masterData[masterData$Player==player,]
-            winSum <- sum(playerSeasons$TeamWins)
-            loseSum <- sum(playerSeasons$TeamLosses)
+            playseas <- masterData[masterData$Player==player,]
+            winSum <- sum(playseas$TeamWins)
+            loseSum <- sum(playseas$TeamLosses)
             diff <- paste(ifelse(winSum>loseSum,"+",""),(winSum-loseSum),sep="")
             return(c(winSum,loseSum,diff))
-        }))),playerSeasons)
+        }))),as.character(playerSeasons))
         playerOveralldf$X1 <- as.numeric(as.character(playerOveralldf$X1))
         playerOveralldf$X2 <- as.numeric(as.character(playerOveralldf$X2))
         playerOveralldf$X3 <- as.character(playerOveralldf$X3)
-        playerOveralldf$playerSeasons <- as.numeric(playerOveralldf$playerSeasons)
+#         playerOveralldf$playerSeasons <- as.numeric(playerOveralldf$playerSeasons)
 #         playerOveralldf <- cbind(rownames(playerOveralldf),playerOveralldf)
         colnames(playerOveralldf) <- c("Wins","Losses","+/-","Seasons")
         html.table <- sjt.df(playerOveralldf, altr.row.col=TRUE, string.var = "Player", describe=FALSE, no.output=T,show.rownames = T, hideProgressBar=T)
