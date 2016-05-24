@@ -238,7 +238,7 @@ shinyServer(function(input, output) {
         playerOveralldf <- cbind(rownames(playerOveralldf),playerOveralldf)
         colnames(playerOveralldf) <- c("Player","Wins","Losses","pm","Seasons")
         rownames(playerOveralldf) <- NULL
-        html.table <- sjt.df(playerOveralldf, altr.row.col=TRUE, hideProgressBar=F)
+        html.table <- sjt.df(playerOveralldf, altr.row.col=TRUE)
         html.table$output.complete
   })
 })
