@@ -22,9 +22,10 @@ shinyUI(fluidPage(
         ),
         fluidRow(
             column(10, uiOutput("NetChart"))
-        ),
-        fluidRow(
-            column(10, forceNetworkOutput("force"))
         )
+#     ,
+#         fluidRow(
+#             column(10, forceNetworkOutput("force"))
+#         )
     )
 )

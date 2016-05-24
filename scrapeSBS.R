@@ -1,16 +1,24 @@
 library(XML)
 library(RCurl)
-
+library(doParallel)
+library(foreach)
 
 # colnames(masterData) <- c('LeagueID', 'LeagueName', 'TeamName', 'TeamID', 'TeamWins', 'Player')
 
 
-leagueIDs <- 1:50000
+leagueIDs <- 1:100000
 
-htmlRes <- sapply(leagueIDs,function(leagueID){
-    cat('.')
-    getURL(paste("http://www.socialbostonsports.com/leagues/",leagueID,"/standings",sep=""))
+cl <- makeCluster(4)
+registerDoParallel(cl)
+system.time(htmlRes <- foreach(i=leagueIDs,.packages=c("RCurl","XML")) %dopar% {
+    getURL(paste("http://www.socialbostonsports.com/leagues/",i,"/standings",sep=""))
 })
+stopCluster(cl)
+
+# system.time(htmlRes <- sapply(leagueIDs,function(leagueID){
+#     cat('.')
+#     getURL(paste("http://www.socialbostonsports.com/leagues/",leagueID,"/standings",sep=""))
+# }))
 
 
 
@@ -35,6 +43,7 @@ validLeagueIDs <- validLeagueIDs[dballLeague]
 validLeagueDF <- data.frame(cbind(validLeagueIDs,leaguenames))
 
 saveRDS(validLeagueDF,"validLeagueDF.rdata")
+validLeagueDF <- readRDS("validLeagueDF.rdata")
 
 # Go to each league standings page
 htmlLeaguePages <- sapply(validLeagueDF$validLeagueIDs, function(leagueID){
@@ -93,14 +102,17 @@ for(leagueIndex in 1:numLeagues){
             # rbind(LeagueID, LeagueName, TeamName, TeamID, TeamWins, Player)
             
             for(player in playername){
-                masterData <- rbind(masterData,c(validLeagueIDs[leagueIndex], leaguenames[leagueIndex], rownames(display.table)[x], teamID, display.table$Wins[x], display.table$Losses[x], player))
+                masterData <- rbind(masterData,c(validLeagueDF$validLeagueIDs[leagueIndex], validLeagueDF$leaguenames[leagueIndex], rownames(display.table)[x], teamID, display.table$Wins[x], display.table$Losses[x], player))
             }
             
         }
     }
 }
 masterData <- masterData[-1,]
+# Remove outliers (hard court, etc...)
+masterData <- masterData[as.numeric(masterData$TeamWins)<100,]
 saveRDS(masterData,file="./data/masterData.rds")
+masterData <- readRDS(file="./data/masterData.rds")
 
 library(reshape2)
 minSeasonsPlayed <- 13

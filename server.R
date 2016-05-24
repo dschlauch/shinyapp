@@ -10,9 +10,9 @@ data(MisNodes)
 shinyServer(function(input, output) {
     validLeagueDF <- readRDS("./data/validLeagueDF.rdata")
     masterData <- readRDS("./data/masterData.rds")
-    masterData[,1] <- as.factor(as.numeric(masterData[,1])) 
-    masterData[,5] <- as.numeric(masterData[,5]) 
-    masterData[,6] <- as.numeric(masterData[,6]) 
+    masterData[,1] <- as.character(masterData[,1])
+    masterData[,5] <- as.numeric(as.character(masterData[,5]))
+    masterData[,6] <- as.numeric(as.character(masterData[,6]))
     
     getFullLinks <- function(){
         html.raw<-htmlTreeParse(
@@ -146,6 +146,10 @@ shinyServer(function(input, output) {
       table <- matrix(unlistedRes,nrow=6)
       table.df <- data.frame(t(matrix(as.numeric(table[-1,]),nrow=nrow(table[-1,]))))
       table.df$Team <- table[1,]
+      
+      notHolder <- !grepl("SBS Holder|Court|TBD|SBSholder|SBSHolder|SBS HOLDER|SBS holder", table.df$Team)
+      table.df <- table.df[notHolder,]
+      
       colnames(table.df)[4] <- "Wins"
       table.df <- table.df[order(-table.df[,4]),]
       
@@ -176,7 +180,7 @@ shinyServer(function(input, output) {
       total.games <- sum(table.df$Wins)/nrow(table.df)
       display.table <- data.frame("Wins"=table.df$Wins)
       rownames(display.table) <- table.df$Team
-      notHolder <- !grepl("SBS Holder|Court|TBD|SBSholder|SBSHolder|SBS HOLDER", rownames(display.table))
+      notHolder <- !grepl("SBS Holder|Court|TBD|SBSholder|SBSHolder|SBS HOLDER|SBS holder", rownames(display.table))
       display.table <- display.table[notHolder,,drop=F]
       numGames <- 2*sum(display.table$Wins)/nrow(display.table)
       if(numGames<70&numGames>45){
@@ -186,7 +190,7 @@ shinyServer(function(input, output) {
       display.table$Losses <- round(numGames - display.table$Wins,0)
       display.table$PCT <- round(display.table$Wins / (display.table$Wins + display.table$Losses),3)
       display.table$GB <- round(max(display.table$Wins) - display.table$Wins,0)
-      html.table <- sjt.df(display.table, alternateRowColors=TRUE, stringVariable = "Team Name",
+      html.table <- sjt.df(display.table, altr.row.col=TRUE, string.var = "Team Name",
                            orderColumn="Losses", describe=FALSE, no.output=T, hideProgressBar=T)
       html.table$output.complete
   }
@@ -204,23 +208,24 @@ shinyServer(function(input, output) {
       total.games <- sum(table.df$Wins)/nrow(table.df)
       display.table <- data.frame("Wins"=table.df$Wins)
       rownames(display.table) <- table.df$Team
-      display.table <- display.table[rownames(display.table)!="SBS Holder",,drop=F]
+      notHolder <- !grepl("SBS Holder|Court|TBD|SBSholder|SBSHolder|SBS HOLDER|SBS holder", rownames(display.table))
+      display.table <- display.table[notHolder,,drop=F]
       display.table$Losses <- round(2*sum(display.table$Wins)/nrow(display.table)-display.table$Wins,0)
       display.table$PCT <- round(display.table$Wins / (display.table$Wins + display.table$Losses),3)
       display.table$GB <- round(max(display.table$Wins) - display.table$Wins,0)
-      html.table <- sjt.df(display.table, alternateRowColors=TRUE, stringVariable = "Team Name",
+      html.table <- sjt.df(display.table, altr.row.col=TRUE, string.var = "Team Name",
              orderColumn="Losses", describe=FALSE, no.output=T, hideProgressBar=T)
       html.table$output.complete
   })
     output$teams <- renderText({
         print(input$individualselect)
         teams.df <- masterData[masterData$Player==input$individualselect, c(2,3,5,6)]
-        html.table <- sjt.df(teams.df, alternateRowColors=TRUE, stringVariable = "Seasons", describe=FALSE, no.output=T,showRowNames = FALSE, hideProgressBar=T)
+        html.table <- sjt.df(teams.df, altr.row.col=TRUE, string.var = "Seasons", describe=FALSE, no.output=T,showRowNames = FALSE, hideProgressBar=T)
         paste(h3("Overall record:",sum(teams.df$TeamWins),"-",sum(teams.df$TeamLosses)), html.table$output.complete, sep="")
     })
     output$overall <- renderText({
         playerSeasons <- rev(sort(table(masterData$Player)))
-        playerSeasons <- playerSeasons[playerSeasons>1]
+        playerSeasons <- playerSeasons[playerSeasons>3]
         playerOveralldf <- cbind(data.frame(t(sapply(names(playerSeasons),function(player){
             playerSeasons <- masterData[masterData$Player==player,]
             winSum <- sum(playerSeasons$TeamWins)
@@ -229,7 +234,9 @@ shinyServer(function(input, output) {
             return(c(winSum,loseSum,diff))
         }))),playerSeasons)
         colnames(playerOveralldf) <- c("Wins","Losses","+/-","Seasons")
-        html.table <- sjt.df(playerOveralldf, alternateRowColors=TRUE, stringVariable = "Player", describe=FALSE, no.output=T,showRowNames = TRUE, hideProgressBar=T)
+        playerOveralldf$Wins <- as.numeric(as.character(playerOveralldf$Wins))
+        playerOveralldf$Losses <- as.numeric(as.character(playerOveralldf$Losses))
+        html.table <- sjt.df(playerOveralldf, altr.row.col=TRUE, string.var = "Player", describe=FALSE, no.output=T,show.rownames = TRUE, hideProgressBar=F)
         html.table$output.complete
   })
 })
