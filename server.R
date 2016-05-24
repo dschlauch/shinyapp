@@ -10,7 +10,8 @@ data(MisNodes)
 shinyServer(function(input, output) {
     validLeagueDF <- readRDS("./data/validLeagueDF.rdata")
     masterData <- readRDS("./data/masterData.rds")
-    masterData[,1] <- as.character(masterData[,1])
+    masterData[,1] <- factor(masterData[,1], levels=unique(as.character(masterData[,1]) ))
+    
     masterData[,5] <- as.numeric(as.character(masterData[,5]))
     masterData[,6] <- as.numeric(as.character(masterData[,6]))
     
