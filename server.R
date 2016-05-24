@@ -233,9 +233,10 @@ shinyServer(function(input, output) {
             diff <- paste(ifelse(winSum>loseSum,"+",""),(winSum-loseSum),sep="")
             return(c(winSum,loseSum,diff))
         }))),playerSeasons)
-        colnames(playerOveralldf) <- c("Wins","Losses","+/-","Seasons")
-        playerOveralldf$Wins <- as.numeric(as.character(playerOveralldf$Wins))
-        playerOveralldf$Losses <- as.numeric(as.character(playerOveralldf$Losses))
+        playerOveralldf$X1 <- as.numeric(as.character(playerOveralldf$X1))
+        playerOveralldf$X2 <- as.numeric(as.character(playerOveralldf$X2))
+        playerOveralldf <- cbind(rownames(playerOveralldf),playerOveralldf)
+        colnames(playerOveralldf) <- c("Player","Wins","Losses","+/-","Seasons")
         html.table <- sjt.df(playerOveralldf, altr.row.col=TRUE, string.var = "Player", describe=FALSE, no.output=T,show.rownames = F, hideProgressBar=F)
         html.table$output.complete
   })
