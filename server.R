@@ -235,9 +235,11 @@ shinyServer(function(input, output) {
         }))),playerSeasons)
         playerOveralldf$X1 <- as.numeric(as.character(playerOveralldf$X1))
         playerOveralldf$X2 <- as.numeric(as.character(playerOveralldf$X2))
+        playerOveralldf$X3 <- as.character(playerOveralldf$X3)
+        playerOveralldf$playerSeasons <- as.numeric(playerOveralldf$playerSeasons)
 #         playerOveralldf <- cbind(rownames(playerOveralldf),playerOveralldf)
         colnames(playerOveralldf) <- c("Wins","Losses","+/-","Seasons")
-        html.table <- sjt.df(playerOveralldf, altr.row.col=TRUE, string.var = "Playe", describe=FALSE, no.output=T,show.rownames = FALSE, hideProgressBar=T)
+        html.table <- sjt.df(playerOveralldf, altr.row.col=TRUE, string.var = "Player", describe=FALSE, no.output=T,show.rownames = T, hideProgressBar=T)
         html.table$output.complete
   })
 })
